@@ -80,6 +80,40 @@ test('setup', function (t) {
     var rules = [];
     RULES = {
         o0: {
+            unicodeRole: {
+                rule: 'FROM (tag "☂" = "ທ" OR tag "삼겹살" = "불고기") '
+                    + 'TO ip 8.8.8.8 BLOCK udp PORT 53'
+            },
+            escapedTag1: {
+                rule: 'FROM (tag "[" = "*" OR tag "]" = "=") '
+                    + 'TO ip 8.8.8.8 BLOCK tcp PORT 80'
+            },
+            escapedTag2: {
+                rule: 'FROM (tag "*" = "=" OR tag "\\\\") '
+                    + 'TO ip 8.8.8.8 BLOCK tcp PORT 80'
+            },
+            escapedTag3: {
+                rule: 'FROM (tag "=" OR tag "\\"" = "*") '
+                    + 'TO ip 8.8.8.8 BLOCK tcp PORT 80'
+            },
+            escapedTag4: {
+                rule: 'FROM tag "=" = "*" '
+                    + 'TO ip 8.8.8.8 BLOCK tcp PORT 80'
+            },
+            escapedTag5: {
+                rule: 'FROM tag "<=" = "*" '
+                    + 'TO ip 8.8.8.8 BLOCK tcp PORT 80'
+            },
+            escapedTag6: {
+                rule: 'FROM tag "<=" = "\\)" '
+                    + 'TO ip 8.8.8.8 BLOCK tcp PORT 80'
+            },
+            commaTag: {
+                rule: 'FROM tag "foo,other" TO ip 8.8.8.8 BLOCK tcp PORT 80'
+            },
+            ampersandTag: {
+                rule: 'FROM tag "foo&other" TO ip 8.8.8.8 BLOCK tcp PORT 80'
+            },
             otherToRole: {
                 rule: 'FROM tag other TO tag role ALLOW tcp PORT 5432'
             },
@@ -499,6 +533,124 @@ test('resolve', function (t) {
             vms: [ VMS[3] ]
         } ],
 
+    [   O_STR[0] + 'escaped tags 1',
+        {
+            owner_uuid: OWNERS[0],
+            tags: { '[': true }
+        },
+        {
+            allVMs: false,
+            owner_uuid: OWNERS[0],
+            rules: [ RULES.o0.escapedTag1 ],
+            tags: { },
+            vms: []
+        } ],
+
+    [   O_STR[0] + 'escaped tags 2',
+        {
+            owner_uuid: OWNERS[0],
+            tags: { '*': true }
+        },
+        {
+            allVMs: false,
+            owner_uuid: OWNERS[0],
+            rules: [ RULES.o0.escapedTag2 ],
+            tags: { },
+            vms: []
+        } ],
+
+    [   O_STR[0] + 'escaped tags 3 (fails on UFDS: quote not stored unescaped)',
+        {
+            owner_uuid: OWNERS[0],
+            tags: { '"': true }
+        },
+        {
+            allVMs: false,
+            owner_uuid: OWNERS[0],
+            rules: [ RULES.o0.escapedTag3 ],
+            tags: { },
+            vms: []
+        } ],
+
+    [   O_STR[0] + 'escaped tags 3 & 4 (fails on UFDS: query finds extra rule)',
+        {
+            owner_uuid: OWNERS[0],
+            tags: { '=': true }
+        },
+        {
+            allVMs: false,
+            owner_uuid: OWNERS[0],
+            rules: oRules(0, [ 'escapedTag3', 'escapedTag4' ]),
+            tags: { },
+            vms: []
+        } ],
+
+
+    [   O_STR[0] + 'escaped tags 4 (fails on UFDS: query finds 2 extra rules)',
+        {
+            owner_uuid: OWNERS[0],
+            tags: { '=': [ '*' ] }
+        },
+        {
+            allVMs: false,
+            owner_uuid: OWNERS[0],
+            rules: oRules(0, [ 'escapedTag4' ]),
+            tags: { },
+            vms: []
+        } ],
+
+    [   O_STR[0] + 'escaped tags 5',
+        {
+            owner_uuid: OWNERS[0],
+            tags: { '<=': [ '*' ] }
+        },
+        {
+            allVMs: false,
+            owner_uuid: OWNERS[0],
+            rules: oRules(0, [ 'escapedTag5' ]),
+            tags: { },
+            vms: []
+        } ],
+
+    [   O_STR[0] + 'escaped tags 6',
+        {
+            owner_uuid: OWNERS[0],
+            tags: { '<=': [ ')' ] }
+        },
+        {
+            allVMs: false,
+            owner_uuid: OWNERS[0],
+            rules: oRules(0, [ 'escapedTag6' ]),
+            tags: { },
+            vms: []
+        } ],
+
+    [   O_STR[0] + 'tag with comma',
+        {
+            owner_uuid: OWNERS[0],
+            tags: { 'foo,other': true }
+        },
+        {
+            allVMs: false,
+            owner_uuid: OWNERS[0],
+            rules: oRules(0, [ 'commaTag' ]),
+            tags: { },
+            vms: []
+        } ],
+
+    [   O_STR[0] + 'tag with ampersand',
+        {
+            owner_uuid: OWNERS[0],
+            tags: { 'foo&other': true }
+        },
+        {
+            allVMs: false,
+            owner_uuid: OWNERS[0],
+            rules: oRules(0, [ 'ampersandTag' ]),
+            tags: { },
+            vms: []
+        } ],
+
     [   fmt('%sVM 5 (%s)', O_STR[0], VMS[5]),
         {
             owner_uuid: OWNERS[6],
@@ -541,6 +693,54 @@ test('resolve', function (t) {
 
 test('list', function (t) {
     var exp = [
+    [   { owner_uuid: OWNERS[0], tag: 'other' },
+        oRules(0, [ 'otherToRole' ])
+    ],
+
+    [   { owner_uuid: OWNERS[0], tag: '[' },
+        oRules(0, [ 'escapedTag1' ])
+    ],
+
+    [   { owner_uuid: OWNERS[0], tag: ']' },
+        oRules(0, [ 'escapedTag1' ])
+    ],
+
+    [   { owner_uuid: OWNERS[0], tag: '(' },
+        oRules(0, [])
+    ],
+
+    [   { owner_uuid: OWNERS[0], tag: ')' },
+        oRules(0, [])
+    ],
+
+    [   { owner_uuid: OWNERS[0], tag: ')))' },
+        oRules(0, [])
+    ],
+
+    [   { owner_uuid: OWNERS[0], tag: '*' },
+        oRules(0, [ 'escapedTag2' ])
+    ],
+
+    [   { owner_uuid: OWNERS[0], tag: '<=' },
+        oRules(0, [ 'escapedTag5', 'escapedTag6' ])
+    ],
+
+    [   { owner_uuid: OWNERS[0], tag: 'foo,other' },
+        oRules(0, [ 'commaTag' ])
+    ],
+
+    [   { owner_uuid: OWNERS[0], tag: 'foo&other' },
+        oRules(0, [ 'ampersandTag' ])
+    ],
+
+    [   { owner_uuid: OWNERS[0], tag: '☂' },
+        oRules(0, [ 'unicodeRole' ])
+    ],
+
+    [   { owner_uuid: OWNERS[0], tag: '삼겹살' },
+        oRules(0, [ 'unicodeRole' ])
+    ],
+
     [   { owner_uuid: OWNERS[0], tag: 'role' },
         oRules(0, [ 'otherToRole', 'vm0ToRoleWeb', 'fooToRoleWeb',
             'vm1ToRoleOther', 'nowThenToRoleOther' ])
@@ -580,6 +780,35 @@ test('list', function (t) {
 
     }, function (err) {
         return t.end();
+    });
+});
+
+
+test('list (these fail with UFDS)', function (t) {
+    var exp = [
+    [   { owner_uuid: OWNERS[0], tag: '\\' },
+        oRules(0, [ 'escapedTag2' ])
+    ],
+
+    [   { owner_uuid: OWNERS[0], tag: '"' },
+        oRules(0, [ 'escapedTag3' ])
+    ],
+
+    [   { owner_uuid: OWNERS[0], tag: '=' },
+        oRules(0, [ 'escapedTag3', 'escapedTag4' ])
+    ]
+
+    ];
+
+    async.forEachSeries(exp, function (data, cb) {
+        mod_rule.list(t, {
+            params: data[0],
+            exp: data[1]
+        }, cb);
+
+    }, function (err) {
+        t.ifError(err, 'Querying rules should succeed');
+        t.end();
     });
 });
 
