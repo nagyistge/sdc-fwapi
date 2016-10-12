@@ -12,6 +12,8 @@
  * bunyan logger for tests
  */
 
+'use strict';
+
 var bunyan = require('bunyan');
 var restify = require('restify');
 

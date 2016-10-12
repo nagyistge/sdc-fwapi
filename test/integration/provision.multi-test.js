@@ -12,14 +12,12 @@
  * Provision workflow and FWAPI integration tests
  */
 
+'use strict';
+
 var test = require('tape');
-var async = require('async');
 var config = require('../lib/config');
-var fmt = require('util').format;
-var log = require('../lib/log');
 var mod_cn = require('../lib/cn');
 var mod_rule = require('../lib/rule');
-var mod_uuid = require('node-uuid');
 var mod_vm = require('../lib/vm');
 var util = require('util');
 
@@ -146,7 +144,8 @@ test('Provision VMs', function (t) {
             VMS = res;
         }
 
-        return t.end();
+        t.ifError(err, 'Provisioning VMs should succeed');
+        t.end();
     });
 });
 

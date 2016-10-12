@@ -12,6 +12,8 @@
  * Provision workflow and FWAPI integration tests
  */
 
+'use strict';
+
 var test = require('tape');
 var config = require('../lib/config');
 var mod_cn = require('../lib/cn');

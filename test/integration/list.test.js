@@ -12,14 +12,13 @@
  * Integration tests for listing rules
  */
 
+'use strict';
+
 var test = require('tape');
-var async = require('async');
 var constants = require('../../lib/util/constants');
 var extend = require('xtend');
-var h = require('./helpers');
 var mod_rule = require('../lib/rule');
 var mod_uuid = require('node-uuid');
-var util = require('util');
 
 
 

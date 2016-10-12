@@ -12,14 +12,14 @@
  * Unit tests for /resolve endpoint
  */
 
+'use strict';
+
 var test = require('tape');
 var assert = require('assert-plus');
 var async = require('async');
 var fmt = require('util').format;
-var helpers = require('./helpers');
 var mod_rule = require('../lib/rule');
 var mod_uuid = require('node-uuid');
-var util = require('util');
 
 
 
@@ -254,7 +254,8 @@ test('setup', function (t) {
             exp: rule
         }, cb);
     }, function (err) {
-        return t.end();
+        t.ifError(err, 'All creates and gets should succeed');
+        t.end();
     });
 });
 
@@ -690,7 +691,8 @@ test('resolve', function (t) {
         }, cb);
 
     }, function (err) {
-        return t.end();
+        t.ifError(err, 'All queries should resolve');
+        t.end();
     });
 });
 
@@ -783,7 +785,8 @@ test('list', function (t) {
         }, cb);
 
     }, function (err) {
-        return t.end();
+        t.ifError(err, 'Querying rules should succeed');
+        t.end();
     });
 });
 

@@ -12,6 +12,8 @@
  * Integration tests for getting rules
  */
 
+'use strict';
+
 var test = require('tape');
 var mod_rule = require('../lib/rule');
 var mod_uuid = require('node-uuid');

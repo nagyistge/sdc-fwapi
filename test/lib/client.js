@@ -12,6 +12,8 @@
  * Test helpers for dealing with SDC clients
  */
 
+'use strict';
+
 var config = require('./config');
 var RestifyClient = require('sdc-clients/lib/restifyclient');
 var FWAPI = require('sdc-clients/lib/fwapi');

@@ -12,6 +12,8 @@
  * Helpers for manipulating VMs
  */
 
+'use strict';
+
 var assert = require('assert-plus');
 var async = require('async');
 var clone = require('clone');

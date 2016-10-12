@@ -12,6 +12,8 @@
  * CN interaction helpers
  */
 
+'use strict';
+
 var assert = require('assert-plus');
 var clone = require('clone');
 var common = require('./common');
@@ -71,32 +73,29 @@ function checkUrl(t, opts, callback) {
         }
 
         var start = Date.now();
-        /*jsl:ignore*/
-        var timeout;
-        /*jsl:end*/
 
         function checkIt() {
             client.get(opts.url, function (err2, req, res, obj) {
                 var elapsed = Date.now() - start;
 
-                if (err2 && err2.body && err2.body.code == opts.errCode &&
+                if (err2 && err2.body && err2.body.code === opts.errCode &&
                     (elapsed < POLL_TIMEOUT)) {
 
                     // We haven't hit our timeout yet, so keep trying
                     LOG.trace({ start: start.toString(), elapsed: elapsed },
                         'timeout not hit: retrying' + opts.desc);
-                    timeout = setTimeout(checkIt, POLL_INTERVAL);
+                    setTimeout(checkIt, POLL_INTERVAL);
                     return;
                 }
 
                 LOG.debug({ start: start.toString(), elapsed: elapsed },
                     'poll timeout exceeded' + opts.desc);
 
-                return callback(err2, req, res, obj);
+                callback(err2, req, res, obj);
             });
         }
 
-        timeout = setTimeout(checkIt, POLL_INTERVAL);
+        setTimeout(checkIt, POLL_INTERVAL);
     });
 }
 

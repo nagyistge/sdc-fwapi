@@ -12,11 +12,12 @@
  * Update tests for /rules endpoints
  */
 
+'use strict';
+
 var test = require('tape');
 var async = require('async');
 var mod_rule = require('../lib/rule');
 var mod_uuid = require('node-uuid');
-var util = require('util');
 
 
 

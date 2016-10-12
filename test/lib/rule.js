@@ -12,6 +12,8 @@
  * Helpers for manipulating FWAPI rules
  */
 
+'use strict';
+
 var assert = require('assert-plus');
 var async = require('async');
 var clone = require('clone');
@@ -239,13 +241,18 @@ function delAllCreated(t, callback) {
  */
 function delAndGet(t, opts, callback) {
     del(t, opts, function (err, res) {
+        if (ifErr(t, err, 'Failed to delete rule')) {
+            callback(err);
+            return;
+        }
+
         opts.expErr = {
             code: 'ResourceNotFound',
             message: 'Rule not found'
         };
         opts.expCode = 404;
 
-        return get(t, opts, callback);
+        get(t, opts, callback);
     });
 }
 
