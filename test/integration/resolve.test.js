@@ -93,7 +93,7 @@ test('setup', function (t) {
                     + 'TO ip 8.8.8.8 BLOCK tcp PORT 80'
             },
             escapedTag3: {
-                rule: 'FROM (tag "=" OR tag "\\"" = "*") '
+                rule: 'FROM (tag "\\"" = "*" OR tag "=" = "a") '
                     + 'TO ip 8.8.8.8 BLOCK tcp PORT 80'
             },
             escapedTag4: {
@@ -115,26 +115,29 @@ test('setup', function (t) {
                 rule: 'FROM tag "foo&other" TO ip 8.8.8.8 BLOCK tcp PORT 80'
             },
             otherToRole: {
-                rule: 'FROM tag other TO tag role ALLOW tcp PORT 5432'
+                rule: 'FROM tag "other" TO tag "role" ALLOW tcp PORT 5432'
             },
             vm0ToRoleWeb: {
                 rule: fmt(
-                    'FROM vm %s TO tag role = web ALLOW tcp PORT 80', VMS[0])
+                    'FROM vm %s TO tag "role" = "web" ALLOW tcp PORT 80',
+                    VMS[0])
             },
             fooToRoleWeb: {
-                rule: 'FROM (tag foo = bar OR tag foo = baz) TO tag role = web '
-                    + 'ALLOW tcp PORT 5433'
+                rule: 'FROM (tag "foo" = "bar" OR tag "foo" = "baz") '
+                    + 'TO tag "role" = "web" ALLOW tcp PORT 5433'
             },
             vm1ToRoleOther: {
                 rule: fmt(
-                    'FROM vm %s TO tag role = other ALLOW tcp PORT 81', VMS[1])
+                    'FROM vm %s TO tag "role" = "other" ALLOW tcp PORT 81',
+                    VMS[1])
             },
             nowThenToRoleOther: {
-                rule:
-                    'FROM tag now = then TO tag role = other ALLOW tcp PORT 82'
+                rule: 'FROM tag "now" = "then" TO tag "role" = "other" ALLOW '
+                    + 'tcp PORT 82'
             },
             numOneToNumTwo: {
-                rule: 'FROM tag num = one TO tag num = two ALLOW tcp PORT 55'
+                rule: 'FROM tag "num" = "one" TO tag "num" = "two" ALLOW '
+                    + 'tcp PORT 55'
             }
         },
 
@@ -150,7 +153,7 @@ test('setup', function (t) {
         o2: {
             oneToAll: {
                 owner_uuid: OWNERS[2],
-                rule: 'FROM tag one TO all vms BLOCK udp PORT 55',
+                rule: 'FROM tag "one" TO all vms BLOCK udp PORT 55',
                 enabled: true
             }
         },
@@ -158,7 +161,7 @@ test('setup', function (t) {
         o3: {
             oneToAll: {
                 owner_uuid: OWNERS[3],
-                rule: 'FROM tag one TO all vms ALLOW udp PORT 56',
+                rule: 'FROM tag "one" TO all vms ALLOW udp PORT 56',
                 enabled: true
             }
         },
@@ -166,7 +169,7 @@ test('setup', function (t) {
         o4: {
             allToOne: {
                 owner_uuid: OWNERS[4],
-                rule: 'FROM all vms TO tag one BLOCK udp PORT 57',
+                rule: 'FROM all vms TO tag "one" BLOCK udp PORT 57',
                 enabled: true
             }
         },
@@ -174,7 +177,7 @@ test('setup', function (t) {
         o5: {
             allToOne: {
                 owner_uuid: OWNERS[5],
-                rule: 'FROM all vms TO tag one ALLOW udp PORT 58',
+                rule: 'FROM all vms TO tag "one" ALLOW udp PORT 58',
                 enabled: true
             }
         },
@@ -182,26 +185,27 @@ test('setup', function (t) {
         o6: {
             vmToOne: {
                 owner_uuid: OWNERS[6],
-                rule: fmt('FROM vm %s TO tag one ALLOW udp PORT 59', VMS[4]),
+                rule: fmt('FROM vm %s TO tag "one" ALLOW udp PORT 59', VMS[4]),
                 enabled: true
             },
 
             vmToOneTwo: {
                 owner_uuid: OWNERS[6],
-                rule: fmt('FROM vm %s TO tag one = two ALLOW udp PORT 59',
+                rule: fmt('FROM vm %s TO tag "one" = "two" ALLOW udp PORT 59',
                     VMS[4]),
                 enabled: true
             },
 
             vmToOneThree: {
                 owner_uuid: OWNERS[6],
-                rule: 'FROM any TO tag one = three ALLOW udp PORT 59',
+                rule: 'FROM any TO tag "one" = "three" ALLOW udp PORT 59',
                 enabled: true
             },
 
             vmToMultiTags: {
                 owner_uuid: OWNERS[6],
-                rule: fmt('FROM vm %s TO (tag five = six OR tag three = four) '
+                rule: fmt('FROM vm %s TO '
+                    + '(tag "five" = "six" OR tag "three" = "four") '
                     + 'ALLOW udp PORT 58', VMS[3]),
                 enabled: true
             },
@@ -612,7 +616,7 @@ test('resolve', function (t) {
             vms: []
         } ],
 
-    [   O_STR[0] + 'escaped tags 6',
+    [   O_STR[0] + 'escaped tags 6 (fails on UFDS: paren not stored unescaped)',
         {
             owner_uuid: OWNERS[0],
             tags: { '<=': [ ')' ] }

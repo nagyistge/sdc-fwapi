@@ -35,13 +35,13 @@ var RULES = [
     {
         enabled: true,
         owner_uuid: OWNERS[1],
-        rule: 'FROM (tag foo = bar OR tag foo = baz) '
-            + 'TO tag side = two ALLOW tcp (PORT 5003 AND PORT 5004)'
+        rule: 'FROM (tag "foo" = "bar" OR tag "foo" = "baz") '
+            + 'TO tag "side" = "two" ALLOW tcp (PORT 5003 AND PORT 5004)'
     },
     {
         enabled: true,
         global: true,
-        rule: 'FROM any TO tag foo = baz ALLOW tcp PORT 5010'
+        rule: 'FROM any TO tag "foo" = "baz" ALLOW tcp PORT 5010'
     }
 ];
 

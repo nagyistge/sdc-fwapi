@@ -61,9 +61,9 @@ test('all target types', function (t) {
     var subnets = ['192.168.2.0/24', '10.2.1.0/24'];
 
     var inRule = {
-        rule: util.format('FROM (ip %s OR subnet %s OR tag %s OR vm %s) ',
+        rule: util.format('FROM (ip %s OR subnet %s OR tag "%s" OR vm %s) ',
             ips[0], subnets[0], tags[0], vms[0])
-            + util.format('TO (ip %s OR subnet %s OR tag %s OR vm %s)',
+            + util.format('TO (ip %s OR subnet %s OR tag "%s" OR vm %s)',
             ips[1], subnets[1], tags[1], vms[1])
             + ' ALLOW tcp (PORT 80 AND PORT 81)',
         enabled: true,
@@ -184,7 +184,7 @@ test('multiple tags with multiple quoted values', function (t) {
         owner_uuid: owner,
         rule: 'FROM (tag "김치" = "白김치" '
             + 'OR tag "김치" = "백김치") TO '
-            + '(tag "some tag" = value OR tag some-tag = "another value") '
+            + '(tag "some tag" = "value" OR tag "some-tag" = "another value") '
             + 'ALLOW tcp PORT 80',
         uuid: rule.uuid,
         version: rule.version
