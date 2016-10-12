@@ -38,7 +38,7 @@ var VM_PARAMS = {
     billing_id: config.test.billing_id
 };
 var VM_NUM = 0;
-var LOG = mod_log.child({ component: 'vm' });
+var LOG = mod_log.get().child({ component: 'vm' });
 var POLL_INTERVAL = config.test.api_poll_interval;
 var PROV_TIMEOUT = config.test.provision_timeout;
 var VMS = {};

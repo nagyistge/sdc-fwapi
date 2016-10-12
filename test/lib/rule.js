@@ -30,9 +30,7 @@ var mod_vasync = require('vasync');
 
 
 
-var GLOBAL_RULES = [];
-var GLOBAL_RULES_RETRIEVED = false;
-var LOG = mod_log.child({ component: 'rule' });
+var LOG = mod_log.get().child({ component: 'rule' });
 var RULES = {};
 
 
@@ -42,16 +40,11 @@ var RULES = {};
 
 
 function getGlobalRules(t, client, callback) {
-    if (GLOBAL_RULES_RETRIEVED) {
-        return callback(null, clone(GLOBAL_RULES));
-    }
-
     client.listRules({ global: true }, function (err, rules) {
         if (ifErr(t, err, 'listing global rules')) {
             return callback(err);
         }
 
-        GLOBAL_RULES = clone(rules);
         return callback(null, rules);
     });
 }
@@ -210,7 +203,7 @@ function del(t, opts, callback) {
         t.ok(updateID, 'x-update-id: ' + updateID + desc);
 
         t.equal(res.statusCode, 204, 'status code' + desc);
-        delete RULES[obj.uuid];
+        delete RULES[opts.uuid];
 
         return done(null, obj, t, callback);
     });

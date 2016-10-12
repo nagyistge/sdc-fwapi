@@ -62,5 +62,6 @@ function getClient(type) {
 
 
 module.exports = {
+    CLIENTS: CLIENTS,
     get: getClient
 };

@@ -12,6 +12,8 @@
  * Unit tests for the firewall rule object
  */
 
+'use strict';
+
 var test = require('tape');
 var mod_rule = require('../../lib/rule');
 var mod_uuid = require('node-uuid');
@@ -92,14 +94,14 @@ test('all target types', function (t) {
     inRule.uuid = rule.uuid;
     inRule.version = rule.version;
 
-    t.deepEqual(rule.raw(), raw, 'rule.raw()');
+    t.deepEqual(rule.rawUFDS(), raw, 'rule.rawUFDS()');
     t.deepEqual(rule.serialize(), inRule, 'rule.serialize()');
     t.equal(rule.dn, util.format('uuid=%s, ou=fwrules, o=smartdc', rule.uuid),
         'rule.dn');
 
     // Now recreate the rule from the raw UFDS data
-    var rule2 = mod_rule.create(rule.raw(), app);
-    t.deepEqual(rule2.raw(), raw, 'rule2.raw()');
+    var rule2 = mod_rule.create(rule.rawUFDS(), app);
+    t.deepEqual(rule2.rawUFDS(), raw, 'rule2.rawUFDS()');
     t.deepEqual(rule2.serialize(), inRule, 'rule2.serialize()');
     t.equal(rule2.dn, util.format('uuid=%s, ou=fwrules, o=smartdc', rule.uuid),
         'rule2.dn');
@@ -135,14 +137,14 @@ test('owner_uuid', function (t) {
     inRule.uuid = rule.uuid;
     inRule.version = rule.version;
 
-    t.deepEqual(rule.raw(), raw, 'rule.raw()');
+    t.deepEqual(rule.rawUFDS(), raw, 'rule.rawUFDS()');
     t.deepEqual(rule.serialize(), inRule, 'rule.serialize()');
     t.equal(rule.dn, util.format('uuid=%s, ou=fwrules, o=smartdc', rule.uuid),
         'rule.dn');
 
     // Now recreate the rule from the raw UFDS data
-    var rule2 = mod_rule.create(rule.raw(), app);
-    t.deepEqual(rule2.raw(), raw, 'rule2.raw()');
+    var rule2 = mod_rule.create(rule.rawUFDS(), app);
+    t.deepEqual(rule2.rawUFDS(), raw, 'rule2.rawUFDS()');
     t.deepEqual(rule2.serialize(), inRule, 'rule2.serialize()');
     t.equal(rule2.dn, util.format('uuid=%s, ou=fwrules, o=smartdc', rule.uuid),
         'rule2.dn');
@@ -175,7 +177,7 @@ test('multiple tags with multiple quoted values', function (t) {
         uuid: rule.uuid,
         version: rule.version
     };
-    t.deepEqual(rule.raw(), raw, 'rule.raw()');
+    t.deepEqual(rule.rawUFDS(), raw, 'rule.rawUFDS()');
 
     var serialized = {
         enabled: false,
@@ -201,8 +203,8 @@ test('multiple tags with multiple quoted values', function (t) {
 
     // Now check that we can reconstruct this data from UFDS
     rule = mod_rule.create(raw, app);
-    t.deepEqual(rule.raw(), raw, 'rule.raw()');
-    t.deepEqual(rule.raw(), raw, 'rule.raw()');
+    t.deepEqual(rule.rawUFDS(), raw, 'rule.rawUFDS()');
+    t.deepEqual(rule.rawUFDS(), raw, 'rule.rawUFDS()');
     t.ok(!rule.allVMs, 'rule.allVMs');
     t.deepEqual(rule.tags, ruleTags, 'rule.tags');
 
@@ -220,7 +222,7 @@ test('global', function (t) {
             owner_uuid: mod_uuid.v4(),
             global: true
         });
-    } catch (pErr) {
+    } catch (_) {
         caught = true;
     }
 

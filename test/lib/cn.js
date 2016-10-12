@@ -33,7 +33,7 @@ var VError = require('verror').VError;
 
 
 var ADMIN_IPS = {};
-var LOG = mod_log.child({ component: 'cn' });
+var LOG = mod_log.get().child({ component: 'cn' });
 var NOT_FOUND_ERR = {
     code: 'ResourceNotFound',
     message: 'rule not found'

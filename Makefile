@@ -16,7 +16,8 @@
 #
 # Tools
 #
-NODEUNIT		:= ./node_modules/.bin/nodeunit
+ISTANBUL	:= node_modules/.bin/istanbul
+FAUCET		:= node_modules/.bin/faucet
 
 
 #
@@ -29,6 +30,9 @@ EXTRA_DOC_DEPS	= deps/restdown-brand-remora/.git
 JS_FILES	:= $(shell ls *.js) $(shell find lib test -name '*.js')
 JSL_CONF_NODE	 = tools/jsl.node.conf
 JSL_FILES_NODE   = $(JS_FILES)
+ESLINT		= ./node_modules/.bin/eslint
+ESLINT_CONF	= tools/eslint.node.conf
+ESLINT_FILES	= $(JS_FILES)
 JSON_FILES	:= config.json.sample package.json
 JSSTYLE_FILES	 = $(JS_FILES)
 JSSTYLE_FLAGS    = -o indent=4,doxygen,unparenthesized-return=0
@@ -59,23 +63,21 @@ INSTDIR         := $(PKGDIR)/root/opt/smartdc/fwapi
 # Repo-specific targets
 #
 .PHONY: all
-all: $(SMF_MANIFESTS) | $(NODEUNIT) $(REPO_DEPS) sdc-scripts
+all: $(SMF_MANIFESTS) | $(NPM_EXEC) $(REPO_DEPS) sdc-scripts
 	$(NPM) install
 
-$(NODEUNIT): | $(NPM_EXEC)
+$(ESLINT): | $(NPM_EXEC)
+	$(NPM) install
+
+$(ISTANBUL): | $(NPM_EXEC)
+	$(NPM) install
+
+$(FAUCET): | $(NPM_EXEC)
 	$(NPM) install
 
 .PHONY: test
-test: $(NODEUNIT)
-	$(NODEUNIT) --reporter=tap test/unit/*.test.js
-
-.PHONY: teststop
-teststop:
-	@(for F in test/unit/*.test.js; do \
-		echo "# $$F" ;\
-		$(NODEUNIT) --reporter tap $$F ;\
-		[[ $$? == "0" ]] || exit 1; \
-	done)
+test: $(ISTANBUL) $(FAUCET)
+	$(ISTANBUL) cover --print none test/unit/run.js | $(FAUCET)
 
 node_modules/fwrule: | $(NPM_EXEC)
 	$(NPM) install fwrule
@@ -148,6 +150,11 @@ publish: release
   fi
 	mkdir -p $(BITS_DIR)/fwapi
 	cp $(TOP)/$(RELEASE_TARBALL) $(BITS_DIR)/fwapi/$(RELEASE_TARBALL)
+
+
+.PHONY: check
+check:: $(ESLINT)
+	$(ESLINT) -c $(ESLINT_CONF) $(ESLINT_FILES)
 
 
 #

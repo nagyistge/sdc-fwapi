@@ -12,9 +12,10 @@
  * Mock objects for FWAPI unit tests
  */
 
+'use strict';
+
 var EventEmitter = require('events').EventEmitter;
-var mockMoray = require('../lib/mock-moray');
-var mod_uuid = require('node-uuid');
+var mod_filter = require('moray-filter');
 var util = require('util');
 var VError = require('verror').VError;
 
@@ -91,16 +92,29 @@ fakeUFDSclient.prototype.modify = function (dn, change, callback) {
 
 
 fakeUFDSclient.prototype.search = function (dn, opts, callback) {
+    var rule;
+
     if (opts.scope === 'base') {
         var ruleUUID = ruleUUIDfromDN(dn);
-        var rule = UFDS_RULES[ruleUUIDfromDN(dn)];
+        rule = UFDS_RULES[ruleUUID];
         if (!ruleUUID || !rule) {
-            return callback(null, []);
+            callback(null, []);
+            return;
         }
-        return callback(null, [ rule ]);
+        callback(null, [ rule ]);
+        return;
+    } else if (opts.scope === 'sub') {
+        var results = [];
+        for (rule in UFDS_RULES) {
+            if (mod_filter.parse(opts.filter).matches(UFDS_RULES[rule])) {
+                results.push(UFDS_RULES[rule]);
+            }
+        }
+        callback(null, results);
+        return;
     }
 
-    return callback(new Error('xxxx'));
+    callback(new Error('xxxx'));
 };
 
 
@@ -118,8 +132,6 @@ function fakeVMAPIclient() {
 module.exports = {
     // -- mocks
 
-    moray: mockMoray,
-
     'sdc-clients': {
         VMAPI: fakeVMAPIclient
     },
@@ -129,9 +141,5 @@ module.exports = {
     // -- mock data
     set _LOGGER(val) {
         LOG = val;
-    },
-
-    get _BUCKETS() {
-        return mockMoray._buckets;
     }
 };
