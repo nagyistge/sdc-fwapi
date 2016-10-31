@@ -114,6 +114,9 @@ test('setup', function (t) {
             ampersandTag: {
                 rule: 'FROM tag "foo&other" TO ip 8.8.8.8 BLOCK tcp PORT 80'
             },
+            pipeTag: {
+                rule: 'FROM tag "foo|other" TO ip 8.8.8.8 BLOCK tcp PORT 80'
+            },
             otherToRole: {
                 rule: 'FROM tag "other" TO tag "role" ALLOW tcp PORT 5432'
             },
@@ -656,6 +659,19 @@ test('resolve', function (t) {
             vms: []
         } ],
 
+    [   O_STR[0] + 'tag with pipe',
+        {
+            owner_uuid: OWNERS[0],
+            tags: { 'foo|other': true }
+        },
+        {
+            allVMs: false,
+            owner_uuid: OWNERS[0],
+            rules: oRules(0, [ 'pipeTag' ]),
+            tags: { },
+            vms: []
+        } ],
+
     [   fmt('%sVM 5 (%s)', O_STR[0], VMS[5]),
         {
             owner_uuid: OWNERS[6],
@@ -737,6 +753,10 @@ test('list', function (t) {
 
     [   { owner_uuid: OWNERS[0], tag: 'foo&other' },
         oRules(0, [ 'ampersandTag' ])
+    ],
+
+    [   { owner_uuid: OWNERS[0], tag: 'foo|other' },
+        oRules(0, [ 'pipeTag' ])
     ],
 
     [   { owner_uuid: OWNERS[0], tag: '☂' },
