@@ -22,6 +22,7 @@ var done = common.done;
 var fmt = require('util').format;
 var ifErr = common.ifErr;
 var mod_client = require('./client');
+var mod_trunc = require('./trunc');
 var mod_uuid = require('node-uuid');
 var mod_log = require('./log');
 var mod_vasync = require('vasync');
@@ -32,6 +33,7 @@ var mod_vasync = require('vasync');
 
 
 
+var COLUMNS = mod_trunc.COLUMNS;
 var LOG = mod_log.get().child({ component: 'rule' });
 var RULES = {};
 
@@ -71,7 +73,12 @@ function create(t, opts, callback) {
     assert.optionalObject(opts.partialExp, 'opts.partialExp');
 
     var client = opts.client || mod_client.get('fwapi');
-    var desc = fmt(' (creating rule=%s)', opts.rule.rule);
+
+    var descFmt = ' (creating rule=%s)';
+    var descLen = descFmt.length - 2;
+    var desc = (opts.rule.rule.length + descLen > COLUMNS) ?
+        fmt(descFmt, opts.rule.rule.slice(0, COLUMNS - descLen - 3) + '...') :
+        fmt(descFmt, opts.rule.rule);
 
     LOG.debug({ rule: opts.rule }, 'creating rule');
     client.createRule(opts.rule, function (err, obj, req, res) {
@@ -349,7 +356,9 @@ function listRules(t, opts, callback) {
 
     var client = opts.client || mod_client.get('fwapi');
     var params = opts.params || {};
-    var desc = fmt(' (params=%s)', JSON.stringify(params));
+    var descFmt = ' (params=%s)';
+    var descLen = descFmt.length - 2;
+    var desc = fmt(descFmt, mod_trunc.obj(params, COLUMNS - descLen));
 
     client.listRules(params, function (err, obj, req, res) {
         if (opts.expErr) {
@@ -391,8 +400,10 @@ function resolve(t, opts, callback) {
     assert.optionalObject(opts.expErr, 'opts.expErr');
 
     var client = opts.client || mod_client.get('fwapi');
+    var descFmt = ' (resolve: params=%s)';
+    var descLen = descFmt.length - 2;
     var desc = opts.desc ||
-        fmt(' (resolve: params=%s)', JSON.stringify(opts.params));
+        fmt(descFmt, mod_trunc.obj(opts.params, COLUMNS - descLen));
 
     getGlobalRules(t, client, function (gErr, globalRules) {
         if (gErr) {
@@ -450,15 +461,25 @@ function update(t, opts, callback) {
     assert.optionalFunc(callback, 'callback');
 
     assert.object(opts.params, 'opts.params');
-    assert.string(opts.uuid, 'opts.uuid');
+    assert.uuid(opts.uuid, 'opts.uuid');
     assert.optionalObject(opts.exp, 'opts.exp');
     assert.optionalObject(opts.expErr, 'opts.expErr');
     assert.optionalObject(opts.partialExp, 'opts.partialExp');
     assert.optionalObject(opts.rule, 'opts.rule');
 
     var client = opts.client || mod_client.get('fwapi');
-    var desc = fmt(' (params=%s, uuid=%s)', JSON.stringify(opts.params),
-        opts.uuid);
+
+    var descFmt = ' (params=%s, uuid=%s)';
+    var descLen = descFmt.length - 4;
+    var tparams = JSON.stringify(opts.params);
+    var tuuid = opts.uuid;
+
+    if (tparams.length + tuuid.length + descLen > COLUMNS) {
+        tuuid = mod_trunc.uuid(tuuid);
+        tparams = mod_trunc.obj(opts.params, COLUMNS - descLen - tuuid.length);
+    }
+
+    var desc = fmt(descFmt, tparams, tuuid);
 
     t.ok(opts.uuid, 'update' + desc);
     LOG.debug({ opts: opts }, 'updating rule');
