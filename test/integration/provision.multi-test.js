@@ -78,7 +78,7 @@ test('Add rules', function (t) {
             description: 'allow SSH',
             enabled: true,
             owner_uuid: OWNERS[0],
-            rule: util.format('FROM any TO tag %s ALLOW tcp PORT 22',
+            rule: util.format('FROM any TO tag "%s" ALLOW tcp PORT 22',
                 TAGS.ssh)
         };
 
@@ -93,7 +93,7 @@ test('Add rules', function (t) {
             description: 'allow DNS',
             enabled: true,
             owner_uuid: OWNERS[0],
-            rule: util.format('FROM any TO tag %s ALLOW udp PORT 53',
+            rule: util.format('FROM any TO tag "%s" ALLOW udp PORT 53',
                 TAGS.dns)
         };
 
@@ -224,8 +224,8 @@ test('Add disabled rule', function (t) {
             description: 'allow DB',
             enabled: false,
             owner_uuid: OWNERS[0],
-            rule: util.format('FROM (tag %s = 1 OR tag %s = 2) TO ' +
-                '(tag %s = 1 OR tag %s = 2) ALLOW tcp PORT 5432',
+            rule: util.format('FROM (tag "%s" = "1" OR tag "%s" = "2") TO ' +
+                '(tag "%s" = "1" OR tag "%s" = "2") ALLOW tcp PORT 5432',
                 TAGS.db, TAGS.db, TAGS.db, TAGS.db)
         };
 
